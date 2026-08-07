@@ -56,6 +56,7 @@ class WeatherResponse(BaseModel):
     result: WeatherResult | None
     error_code: int
 def main():
+    str="这里我做了一个天气查询的命令行工具，使用了聚合数据的天气API。"
     url1="https://apis.juhe.cn/simpleWeather/query"
     load_dotenv()
     apiKey=os.getenv("apiKey")
