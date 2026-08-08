@@ -1,5 +1,6 @@
 import requests
 import json
+import ruff
 import os
 import logging
 from pydantic import BaseModel, Field
@@ -65,7 +66,7 @@ def main():
         'city':city,
         'key':apiKey
     }
-    try:       
+    try:
         response=requests.get(url1,params=params,timeout=5)
         response.raise_for_status()  # Raise an exception for HTTP errors
         logger.info(f"Request URL: {response.url}, Status Code: {response.status_code}")

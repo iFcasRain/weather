@@ -8,4 +8,20 @@ dependencies = [
     "pydantic>=2.13.4",
     "python-dotenv>=1.2.2",
     "requests>=2.34.2",
+    "ruff>=0.16.2",
 ]
+[tool.ruff]
+# 检查的规则集：E=错误, F=逻辑错误, I=导入排序, W=警告, 再加上一些代码风格建议
+select = ["E", "F", "I", "W", "C", "B"]
+
+# 忽略某些规则（比如允许未使用的变量，或者过于严格的命名规范）
+ignore = ["F401", "E501"] # F401是未使用导入，E501是行太长（交给了 formatter处理）
+
+# 指定需要格式化和检查的文件（防止把虚拟环境 venv 里的代码也给改了）
+include = ["*.py"]
+exclude = ["venv", ".git", "__pycache__", "build", "dist"]
+
+[tool.ruff.format]
+# 格式化配置，默认和 Black 保持一致
+quote-style = "double"
+line-ending = "lf"
