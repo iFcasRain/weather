@@ -5,10 +5,13 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "fastapi>=0.141.1",
     "pydantic>=2.13.4",
     "python-dotenv>=1.2.2",
     "requests>=2.34.2",
     "ruff>=0.16.2",
+    "unicorn>=2.1.4",
+    "uvicorn>=0.52.4",
 ]
 [tool.ruff]
 # 检查的规则集：E=错误, F=逻辑错误, I=导入排序, W=警告, 再加上一些代码风格建议

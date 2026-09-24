@@ -1,6 +1,5 @@
 import requests
 import json
-import ruff
 import os
 import logging
 from pydantic import BaseModel, Field
