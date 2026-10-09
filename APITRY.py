@@ -4,12 +4,14 @@ import requests
 import json
 import time
 import uuid
+import mysql.connector
 from starlette.middleware.base import BaseHTTPMiddleware
 from pydantic import BaseModel,Field
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException,Depends
+from fastapi import FastAPI, HTTPException,Depends,Query
 from fastapi.security import HTTPAuthorizationCredentials , HTTPBearer
 from fastapi.responses import JSONResponse
+from database import save_weather_history,get_weather_history,get_weather_stats
 #日志
 logger=logging.getLogger('weather_logger')
 logger.setLevel(logging.INFO)
@@ -57,7 +59,8 @@ class WeatherResponse(BaseModel):
 
 class WeatherRequest(BaseModel):
     city: list[str] = Field(min_length=1,description="城市查询列表")
-#---------------------------------------------------------中间件
+#---------------------------------------------------------
+# 中间件
 class TracingMiddleware(BaseHTTPMiddleware):
     async def dispatch(self,request,call_next):
         trace_id= str(uuid.uuid4())[:8]
@@ -115,6 +118,18 @@ def fetch_weather(city:str) -> dict|None:
         logger.error(f"Unexpected error: {e}")
         raise HTTPException(status_code=500, detail="服务器内部错误，请稍后再试")
 #------------------ -------------------------------------------------------
+#---------------------------------------------------------
+#数据库函数
+@app.get("/weather/history/{city}")
+def get_weather_history(
+    city:str,
+    limit:int=Query(default=20,ge=1,le=100),
+):
+    return get_weather_history(city,limit)
+
+@app.get("/weather/stats")
+def get_weather_stats():
+    return get_weather_stats()
 #接口
 @app.get("/weather/hot")
 async def get_hot_weather():
@@ -125,6 +140,13 @@ async def get_hot_weather():
         try:
             result=fetch_weather(hot_city)
             if result:
+                realtime=result["realtime"]
+                save_weather_history(
+                    city=hot_city,
+                    temperature=float(realtime["temperature"]),
+                    description=realtime["info"],
+                    humidity=int(realtime["humidity"])
+                )
                 results.append({"city":hot_city,**result})
         except HTTPException as e:
             logger.error(f"Error fetching weather for {hot_city}: {e.detail}")
@@ -138,6 +160,13 @@ async def get_weather(city:str,token : str = Depends(verify_token)):
     result=fetch_weather(city)
     if not result:
         raise HTTPException(status_code=404,detail=f"未找到城市：{city}")
+    realtime=result["realtime"]
+    save_weather_history(
+        city=city,
+        temperature=float(realtime["temperature"]),
+        description=realtime["info"],
+        humidity=int(realtime["humidity"])
+    )
     return {"city":city,**result}
 
 @app.post("/weather/batch")
